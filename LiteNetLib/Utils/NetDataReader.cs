@@ -20,7 +20,7 @@ namespace LiteNetLib.Utils
         public bool EndOfData => _position == _dataSize;
         public int AvailableBytes => _dataSize - _position;
 
-        public void SkipBytes(int count) 
+        public void SkipBytes(int count)
         {
             _position += count;
         }
@@ -194,6 +194,18 @@ namespace LiteNetLib.Utils
             return arr;
         }
 
+        public TEnum[] GetEnumArray<TEnum>() where TEnum : unmanaged, Enum
+        {
+            ushort size = BitConverter.ToUInt16(_data, _position);
+            _position += 2;
+            var arr = new TEnum[size];
+            for (int i = 0; i < size; i++)
+            {
+                arr[i] = GetEnum<TEnum>();
+            }
+            return arr;
+        }
+
         public string[] GetStringArray()
         {
             ushort size = BitConverter.ToUInt16(_data, _position);
@@ -216,6 +228,55 @@ namespace LiteNetLib.Utils
                 arr[i] = GetString(maxStringLength);
             }
             return arr;
+        }
+
+        public unsafe TEnum GetEnum<TEnum>() where TEnum : unmanaged, Enum
+        {
+            var underlyingType = Enum.GetUnderlyingType(typeof(TEnum));
+            switch (underlyingType.FullName)
+            {
+                case "System.Byte":
+                    {
+                        var value = GetByte();
+                        return *(TEnum*)&value;
+                    }
+                case "System.SByte":
+                    {
+                        var value = GetSByte();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt16":
+                    {
+                        var value = GetUShort();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int16":
+                    {
+                        var value = GetShort();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt32":
+                    {
+                        var value = GetUInt();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int32":
+                    {
+                        var value = GetInt();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt64":
+                    {
+                        var value = GetULong();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int64":
+                    {
+                        var value = GetLong();
+                        return *(TEnum*)&value;
+                    }
+                default: throw new NotSupportedException();
+            }
         }
 
         public bool GetBool()
@@ -291,7 +352,7 @@ namespace LiteNetLib.Utils
         public string GetString(int maxLength)
         {
             int bytesCount = GetInt();
-            if (bytesCount <= 0 || bytesCount > maxLength*2)
+            if (bytesCount <= 0 || bytesCount > maxLength * 2)
             {
                 return string.Empty;
             }
@@ -353,7 +414,7 @@ namespace LiteNetLib.Utils
             Buffer.BlockCopy(_data, _position, destination, 0, count);
             _position += count;
         }
-        
+
         public sbyte[] GetSBytesWithLength()
         {
             int length = GetInt();
@@ -362,7 +423,7 @@ namespace LiteNetLib.Utils
             _position += length;
             return outgoingData;
         }
-        
+
         public byte[] GetBytesWithLength()
         {
             int length = GetInt();
@@ -374,6 +435,55 @@ namespace LiteNetLib.Utils
         #endregion
 
         #region PeekMethods
+        public unsafe TEnum PeekEnum<TEnum>() where TEnum : unmanaged, Enum
+        {
+            var underlyingType = Enum.GetUnderlyingType(typeof(TEnum));
+            switch (underlyingType.FullName)
+            {
+                case "System.Byte":
+                    {
+                        var value = PeekByte();
+                        return *(TEnum*)&value;
+                    }
+                case "System.SByte":
+                    {
+                        var value = PeekSByte();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt16":
+                    {
+                        var value = PeekUShort();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int16":
+                    {
+                        var value = PeekShort();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt32":
+                    {
+                        var value = PeekUInt();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int32":
+                    {
+                        var value = PeekInt();
+                        return *(TEnum*)&value;
+                    }
+                case "System.UInt64":
+                    {
+                        var value = PeekULong();
+                        return *(TEnum*)&value;
+                    }
+                case "System.Int64":
+                    {
+                        var value = PeekLong();
+                        return *(TEnum*)&value;
+                    }
+                default: throw new NotSupportedException();
+            }
+        }
+
 
         public byte PeekByte()
         {
@@ -467,6 +577,64 @@ namespace LiteNetLib.Utils
         #endregion
 
         #region TryGetMethods
+
+        public unsafe bool TryGetEnum<TEnum>(out TEnum value) where TEnum : unmanaged, Enum
+        {
+            var underlyingType = Enum.GetUnderlyingType(typeof(TEnum));
+            switch (underlyingType.FullName)
+            {
+                case "System.Byte":
+                    {
+                        bool result = TryGetByte(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.SByte":
+                    {
+                        bool result = TryGetSByte(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.UInt16":
+                    {
+                        bool result = TryGetUShort(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.Int16":
+                    {
+                        bool result = TryGetShort(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.UInt32":
+                    {
+                        bool result = TryGetUInt(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.Int32":
+                    {
+                        bool result = TryGetInt(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.UInt64":
+                    {
+                        bool result = TryGetULong(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                case "System.Int64":
+                    {
+                        bool result = TryGetLong(out var numericValue);
+                        value = *(TEnum*)&numericValue;
+                        return result;
+                    }
+                default: throw new NotSupportedException();
+            }
+        }
+
         public bool TryGetByte(out byte result)
         {
             if (AvailableBytes >= 1)
