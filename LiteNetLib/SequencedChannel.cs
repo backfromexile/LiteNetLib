@@ -11,7 +11,7 @@ namespace LiteNetLib
         private readonly NetPacket _ackPacket;
         private bool _mustSendAck;
         private readonly byte _id;
-        private long _lastPacketSendTime;
+        private DateTime _lastPacketSendTime;
 
         public SequencedChannel(NetPeer peer, bool reliable, byte id) : base(peer)
         {
@@ -25,9 +25,9 @@ namespace LiteNetLib
         {
             if (_reliable && OutgoingQueue.Count == 0)
             {
-                long currentTime = DateTime.UtcNow.Ticks;
-                long packetHoldTime = currentTime - _lastPacketSendTime;
-                if (packetHoldTime >= Peer.ResendDelay * TimeSpan.TicksPerMillisecond)
+                DateTime currentTime = DateTime.UtcNow;
+                TimeSpan packetHoldTime = currentTime - _lastPacketSendTime;
+                if (packetHoldTime >= Peer.ResendDelay)
                 {
                     var packet = _lastPacket;
                     if (packet != null)
@@ -48,7 +48,7 @@ namespace LiteNetLib
 
                     if (_reliable && OutgoingQueue.Count == 0)
                     {
-                        _lastPacketSendTime = DateTime.UtcNow.Ticks;
+                        _lastPacketSendTime = DateTime.UtcNow;
                         _lastPacket = packet;
                     }
                     else
