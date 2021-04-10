@@ -1352,6 +1352,17 @@ namespace LiteNetLib
         }
 
         /// <summary>
+        /// Start in manual mode and listening
+        /// In this mode you should use ManualReceive (without PollEvents) for receive packets
+        /// and ManualUpdate(...) for update and send packets
+        /// This mode useful mostly for single-threaded servers
+        /// </summary>
+        public bool StartInManualMode()
+        {
+            return StartInManualMode(0);
+        }
+
+        /// <summary>
         /// Start in manual mode and listening on selected port
         /// In this mode you should use ManualReceive (without PollEvents) for receive packets
         /// and ManualUpdate(...) for update and send packets
