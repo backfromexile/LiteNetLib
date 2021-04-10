@@ -42,7 +42,7 @@ namespace LiteNetLib.Utils
                 netDataWriter.Put(bytes);
                 return netDataWriter;
             }
-            return new NetDataWriter(true, 0) {_data = bytes, _position = bytes.Length};
+            return new NetDataWriter(true, 0) { _data = bytes, _position = bytes.Length };
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace LiteNetLib.Utils
 
         private void PutArray(Array arr, int sz)
         {
-            ushort length = arr == null ? (ushort) 0 : (ushort)arr.Length;
+            ushort length = arr == null ? (ushort)0 : (ushort)arr.Length;
             sz *= length;
             if (_autoResize)
                 ResizeIfNeed(_position + sz + 2);
@@ -264,6 +264,47 @@ namespace LiteNetLib.Utils
             if (arr != null)
                 Buffer.BlockCopy(arr, 0, _data, _position + 2, sz);
             _position += sz + 2;
+        }
+
+        public unsafe void PutEnum<TEnum>(TEnum value) where TEnum : unmanaged, Enum
+        {
+            var underlyingType = Enum.GetUnderlyingType(typeof(TEnum));
+            switch (underlyingType.FullName)
+            {
+                case "System.Byte":
+                    Put(*(byte*)&value);
+                    break;
+                case "System.SByte":
+                    Put(*(sbyte*)&value);
+                    break;
+                case "System.UInt16":
+                    Put(*(ushort*)&value);
+                    break;
+                case "System.Int16":
+                    Put(*(short*)&value);
+                    break;
+                case "System.UInt32":
+                    Put(*(uint*)&value);
+                    break;
+                case "System.Int32":
+                    Put(*(int*)&value);
+                    break;
+                case "System.UInt64":
+                    Put(*(ulong*)&value);
+                    break;
+                case "System.Int64":
+                    Put(*(long*)&value);
+                    break;
+                default: throw new NotSupportedException();
+            }
+        }
+
+        public void PutEnumArray<TEnum>(TEnum[] value) where TEnum : unmanaged, Enum
+        {
+            ushort len = value == null ? (ushort)0 : (ushort)value.Length;
+            Put(len);
+            for (int i = 0; i < len; i++)
+                PutEnum(value[i]);
         }
 
         public void PutArray(float[] value)
