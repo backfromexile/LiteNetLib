@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System;
+using System.Net;
 using System.Net.Sockets;
 using LiteNetLib.Utils;
 
@@ -95,7 +96,7 @@ namespace LiteNetLib
         /// </summary>
         /// <param name="peer">Peer with updated latency</param>
         /// <param name="latency">latency value in milliseconds</param>
-        void OnNetworkLatencyUpdate(NetPeer peer, int latency);
+        void OnNetworkLatencyUpdate(NetPeer peer, TimeSpan latency);
 
         /// <summary>
         /// On peer connection requested
@@ -130,7 +131,7 @@ namespace LiteNetLib
         public delegate void OnNetworkError(IPEndPoint endPoint, SocketError socketError);
         public delegate void OnNetworkReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod);
         public delegate void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType);
-        public delegate void OnNetworkLatencyUpdate(NetPeer peer, int latency);
+        public delegate void OnNetworkLatencyUpdate(NetPeer peer, TimeSpan latency);
         public delegate void OnConnectionRequest(ConnectionRequest request);
         public delegate void OnDeliveryEvent(NetPeer peer, object userData);
         public delegate void OnNtpResponseEvent(NtpPacket packet);
@@ -220,7 +221,7 @@ namespace LiteNetLib
                 NetworkReceiveUnconnectedEvent(remoteEndPoint, reader, messageType);
         }
 
-        void INetEventListener.OnNetworkLatencyUpdate(NetPeer peer, int latency)
+        void INetEventListener.OnNetworkLatencyUpdate(NetPeer peer, TimeSpan latency)
         {
             if (NetworkLatencyUpdateEvent != null)
                 NetworkLatencyUpdateEvent(peer, latency);

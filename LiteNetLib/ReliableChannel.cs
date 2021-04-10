@@ -7,7 +7,7 @@ namespace LiteNetLib
         private struct PendingPacket
         {
             private NetPacket _packet;
-            private long _timeStamp;
+            private DateTime _timeStamp;
             private bool _isSent;
 
             public override string ToString()
@@ -22,18 +22,19 @@ namespace LiteNetLib
             }
 
             //Returns true if there is a pending packet inside
-            public bool TrySend(long currentTime, NetPeer peer)
+            public bool TrySend(DateTime currentTime, NetPeer peer)
             {
                 if (_packet == null)
                     return false;
 
                 if (_isSent) //check send time
                 {
-                    double resendDelay = peer.ResendDelay * TimeSpan.TicksPerMillisecond;
-                    double packetHoldTime = currentTime - _timeStamp;
+                    TimeSpan resendDelay = peer.ResendDelay;
+                    TimeSpan packetHoldTime = currentTime - _timeStamp;
                     if (packetHoldTime < resendDelay)
                         return true;
-                    NetDebug.Write("[RC]Resend: {0} > {1}", (int)packetHoldTime, resendDelay);
+                        
+                    NetDebug.Write("[RC]Resend: {0} > {1}", packetHoldTime, resendDelay);
                 }
                 _timeStamp = currentTime;
                 _isSent = true;
@@ -175,7 +176,7 @@ namespace LiteNetLib
                     Peer.SendUserData(_outgoingAcks);
             }
 
-            long currentTime = DateTime.UtcNow.Ticks;
+            DateTime currentTime = DateTime.UtcNow;
             bool hasPendingPackets = false;
 
             lock (_pendingPackets)

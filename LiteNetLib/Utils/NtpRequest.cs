@@ -1,16 +1,17 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 
 namespace LiteNetLib.Utils
 {
     internal sealed class NtpRequest
     {
-        private const int ResendTimer = 1000;
-        private const int KillTimer = 10000;
+        private static readonly TimeSpan ResendTimer = TimeSpan.FromMilliseconds(1000);
+        private static readonly TimeSpan KillTimer = TimeSpan.FromMilliseconds(10000);
         public const int DefaultPort = 123;
         private readonly IPEndPoint _ntpEndPoint;
-        private int _resendTime = ResendTimer;
-        private int _killTime = 0;
+        private TimeSpan _resendTime = ResendTimer;
+        private TimeSpan _killTime = TimeSpan.Zero;
 
         public NtpRequest(IPEndPoint endPoint)
         {
@@ -19,7 +20,7 @@ namespace LiteNetLib.Utils
 
         public bool NeedToKill => _killTime >= KillTimer;
 
-        public bool Send(NetSocket socket, int time)
+        public bool Send(NetSocket socket, TimeSpan time)
         {
             _resendTime += time;
             _killTime += time;
