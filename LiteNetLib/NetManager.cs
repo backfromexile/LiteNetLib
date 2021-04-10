@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -195,12 +195,12 @@ namespace LiteNetLib
         public TimeSpan UpdateTime = TimeSpan.FromMilliseconds(15);
 
         /// <summary>
-        /// Interval for latency detection and checking connection
+        /// Interval for latency detection and checking connection (in milliseconds)
         /// </summary>
         public TimeSpan PingInterval = TimeSpan.FromMilliseconds(1000);
 
         /// <summary>
-        /// If NetManager doesn't receive any packet from remote peer during this time then connection will be closed
+        /// If NetManager doesn't receive any packet from remote peer during this time (in milliseconds) then connection will be closed
         /// (including library internal keepalive packets)
         /// </summary>
         public TimeSpan DisconnectTimeout = TimeSpan.FromMilliseconds(5000);
@@ -221,12 +221,12 @@ namespace LiteNetLib
         public int SimulationPacketLossChance = 10;
 
         /// <summary>
-        /// Minimum simulated latency
+        /// Minimum simulated latency (in milliseconds)
         /// </summary>
         public TimeSpan SimulationMinLatency = TimeSpan.FromMilliseconds(30);
 
         /// <summary>
-        /// Maximum simulated latency
+        /// Maximum simulated latency (in milliseconds)
         /// </summary>
         public TimeSpan SimulationMaxLatency = TimeSpan.FromMilliseconds( 100);
 
@@ -251,7 +251,7 @@ namespace LiteNetLib
         public bool BroadcastReceiveEnabled = false;
 
         /// <summary>
-        /// Delay between initial connection attempts
+        /// Delay between initial connection attempts (in milliseconds)
         /// </summary>
         public TimeSpan ReconnectDelay = TimeSpan.FromMilliseconds(500);
 

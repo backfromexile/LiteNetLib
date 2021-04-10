@@ -1,4 +1,4 @@
-#if DEBUG
+﻿#if DEBUG
 #define STATS_ENABLED
 #endif
 using System;
@@ -64,7 +64,7 @@ namespace LiteNetLib
         private TimeSpan _remoteDelta;
         private readonly object _timeSinceLastPacketLock = new object();
 
-        //Common            
+        //Common
         private readonly NetPacketPool _packetPool;
         private readonly object _shutdownLock = new object();
 
@@ -524,7 +524,7 @@ namespace LiteNetLib
                 channel = CreateChannel((byte)(channelNumber * 4 + (byte)deliveryMethod));
             }
 
-            //Prepare  
+            //Prepare
             NetDebug.Write("[RS]Packet: " + property);
 
             //Check fragmentation
@@ -1122,8 +1122,8 @@ namespace LiteNetLib
                 //ping timeout
                 if (_pingTimer.IsRunning)
                     UpdateRoundTripTime(_pingTimer.Elapsed);
-                _pingTimer.Reset();
-                _pingTimer.Start();
+              
+                _pingTimer.Restart();
                 NetManager.SendRaw(_pingPacket, EndPoint);
             }
 

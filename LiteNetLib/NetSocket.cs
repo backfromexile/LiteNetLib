@@ -1,4 +1,4 @@
-#if UNITY_IOS && !UNITY_EDITOR
+﻿#if UNITY_IOS && !UNITY_EDITOR
 using UnityEngine;
 #endif
 #if NETSTANDARD || NETCOREAPP
@@ -70,7 +70,7 @@ namespace LiteNetLib
 
         private readonly NetManager _listener;
         private bool _useNativeSockets;
-        private Dictionary<NativeAddr, IPEndPoint> _nativeAddrMap = new Dictionary<NativeAddr, IPEndPoint>(new NativeAddrComparer());
+        private Dictionary<NativeAddr, IPEndPoint> _nativeAddrMap = new Dictionary<NativeAddr, IPEndPoint>();
 
         private const int SioUdpConnreset = -1744830452; //SIO_UDP_CONNRESET = IOC_IN | IOC_VENDOR | 12
         private static readonly IPAddress MulticastAddressV6 = IPAddress.Parse("ff02::1");
@@ -220,8 +220,8 @@ namespace LiteNetLib
         {
             Socket socket = (Socket)state;
             IntPtr socketHandle = socket.Handle;
-            byte[] addrBuffer = new byte[socket.AddressFamily == AddressFamily.InterNetwork 
-                ? NativeSocket.IPv4AddrSize 
+            byte[] addrBuffer = new byte[socket.AddressFamily == AddressFamily.InterNetwork
+                ? NativeSocket.IPv4AddrSize
                 : NativeSocket.IPv6AddrSize];
 
             int addrSize = addrBuffer.Length;
@@ -318,8 +318,8 @@ namespace LiteNetLib
             bool dualMode = ipv6Mode == IPv6Mode.DualMode && IPv6Support;
 
             _udpSocketv4 = new Socket(
-                dualMode ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork, 
-                SocketType.Dgram, 
+                dualMode ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork,
+                SocketType.Dgram,
                 ProtocolType.Udp);
 
             if (!BindSocket(_udpSocketv4, new IPEndPoint(dualMode ? addressIPv6 : addressIPv4, port), reuseAddress, ipv6Mode))
@@ -602,7 +602,7 @@ namespace LiteNetLib
                         }
                         else
                         {
-#if (NETCOREAPP || NETSTANDARD2_1)
+#if NETCOREAPP || NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
                             remoteEndPoint.Address.TryWriteBytes(new Span<byte>(socketAddress, 8, 16), out _);
 #else
                             byte[] addrBytes = remoteEndPoint.Address.GetAddressBytes();
@@ -646,7 +646,7 @@ namespace LiteNetLib
                     case SocketError.NoBufferSpaceAvailable:
                     case SocketError.Interrupted:
                         return 0;
-                    case SocketError.MessageSize: //do nothing              
+                    case SocketError.MessageSize: //do nothing
                         break;
                     default:
                         NetDebug.WriteError("[S]" + ex);
