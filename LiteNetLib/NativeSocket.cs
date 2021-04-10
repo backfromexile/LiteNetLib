@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace LiteNetLib
 {
-    internal readonly struct NativeAddr
+    internal readonly struct NativeAddr : IEquatable<NativeAddr>
     {
         //common parts
         public readonly long Part1; //family, port, etc
@@ -42,6 +42,29 @@ namespace LiteNetLib
         {
             return _hash;
         }
+
+        public bool Equals(NativeAddr other)
+        {
+            return Part1 == other.Part1 &&
+                   Part2 == other.Part2 &&
+                   Part3 == other.Part3 &&
+                   Part4 == other.Part4;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is NativeAddr other && Equals(other);
+        }
+
+        public static bool operator ==(NativeAddr left, NativeAddr right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NativeAddr left, NativeAddr right)
+        {
+            return !left.Equals(right);
+        }
     }
 
     internal class NativeEndPoint : IPEndPoint
@@ -63,7 +86,7 @@ namespace LiteNetLib
                     (address[26] << 16) +
                     (address[25] << 8) +
                     (address[24])));
-#if (NETCOREAPP || NETSTANDARD2_1)
+#if NETCOREAPP || NETSTANDARD2_1 || NETSTANDARD2_1_OR_GREATER
                 Address = new IPAddress(new ReadOnlySpan<byte>(address, 8, 16), scope);
 #else
                 byte[] addrBuffer = new byte[16];
@@ -79,22 +102,6 @@ namespace LiteNetLib
                                                  (address[7] << 24)));
                 Address = new IPAddress(ipv4Addr);
             }
-        }
-    }
-
-    internal class NativeAddrComparer : IEqualityComparer<NativeAddr>
-    {
-        public bool Equals(NativeAddr x, NativeAddr y)
-        {
-            return x.Part1 == y.Part1 &&
-                   x.Part2 == y.Part2 &&
-                   x.Part3 == y.Part3 &&
-                   x.Part4 == y.Part4;
-        }
-
-        public int GetHashCode(NativeAddr obj)
-        {
-            return obj.GetHashCode();
         }
     }
 
@@ -114,6 +121,11 @@ namespace LiteNetLib
         class WinSock
         {
             private const string LibName = "ws2_32.dll";
+
+            [DllImport(LibName)]
+            public static extern SocketError WSAStartup(
+                ushort versionRequested,
+                [In, Out] byte[] wsaData);
 
             [DllImport(LibName, SetLastError = true)]
             public static extern int recvfrom(
@@ -238,7 +250,7 @@ namespace LiteNetLib
             EHOSTDOWN        = 0x10070,
             ENODATA          = 0x10071
         }
-        
+
         private static readonly Dictionary<UnixSocketError, SocketError> NativeErrorToSocketError = new Dictionary<UnixSocketError, SocketError>(42)
         {
             { UnixSocketError.EACCES, SocketError.AccessDenied },
@@ -287,30 +299,28 @@ namespace LiteNetLib
 
         static NativeSocket()
         {
-            int temp = 0;
-            IntPtr p = IntPtr.Zero;
-            
+            IsSupported = false;
             try
             {
-                WinSock.recvfrom(p, null, 0, 0, null, ref temp);
-                IsSupported = true;
+                // use a byte array cause we don't need the returned data, 500B should be always enough, .NET 5 uses 408B
+                IsSupported = WinSock.WSAStartup(0x0202 /* 2.2 */, new byte[500]) == SocketError.Success;
+                return;
             }
             catch
             {
-                UnixMode = true;
+                //do nothing
             }
 
-            if (UnixMode)
+            try
             {
-                try
-                {
-                    UnixSock.recvfrom(p, null, 0, 0, null, ref temp);
-                    IsSupported = true;
-                }
-                catch
-                {
-                    //do nothing
-                }
+                int temp = 0;
+                UnixSock.recvfrom(IntPtr.Zero, null, 0, 0, null, ref temp);
+                IsSupported = true;
+                UnixMode = true;
+            }
+            catch
+            {
+                //do nothing
             }
         }
 
